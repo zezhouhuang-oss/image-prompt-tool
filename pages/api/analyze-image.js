@@ -1,50 +1,53 @@
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "只支持 POST 请求" });
   }
 
   const { imageBase64 } = req.body;
+
   if (!imageBase64) {
     return res.status(400).json({ error: "请上传图片" });
   }
 
   try {
-    // 使用 GPT-3.5 生成文字描述 / 提示词
-    const prompt = `
-你是一个专业短剧海报设计师。
-请根据以下图片描述（Base64 或简单文字），生成详细的提示词：
-- 描述图片的主体内容
-- 场景设定
-- 整体风格
-- 色调与色彩
-- 构图与视角
-- 光影与质感
-- 细节补充
-请用中文输出，每个部分分段清晰。
+    // 模拟生成提示词（mock）
+    const mockResult = {
+      subject: "单人女性，面带微笑",
+      scene: "白天室内，阳光透过窗户",
+      style: "写实风格，短剧封面",
+      color: "明亮温暖色调，局部柔和高对比",
+      composition: "中景特写，人物占画面60%",
+      lighting: "自然光，柔和阴影",
+      details: "背景简洁，人物服饰清晰，画面干净"
+    };
 
-图片内容（Base64 或简单文字）：${imageBase64}
-`;
+    const resultText = `【主体内容】
+${mockResult.subject}
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 600
-    });
+【场景设定】
+${mockResult.scene}
 
-    const result = completion.choices[0].message.content;
-    res.status(200).json({ result });
+【整体风格】
+${mockResult.style}
+
+【色调与色彩】
+${mockResult.color}
+
+【构图与视角】
+${mockResult.composition}
+
+【光影与质感】
+${mockResult.lighting}
+
+【细节补充】
+${mockResult.details}`;
+
+    // 模拟延迟，感觉像真实调用
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    res.status(200).json({ result: resultText });
   } catch (error) {
-    if (error.response?.status === 429) {
-      res.status(429).json({ error: "API 配额超限，请稍后再试" });
-    } else {
-      console.error(error);
-      res.status(500).json({ error: "服务器内部错误" });
-    }
+    console.error(error);
+    res.status(500).json({ error: "服务器内部错误" });
   }
 }
